@@ -7,10 +7,10 @@ app = FastAPI()
 
 
 def split_questions(text):
-    # 1. सगळ्या ओळी आणि जास्तीच्या जागा एकाच ओळीत आणा
+
     text = re.sub(r"\s+", " ", text)
 
-    # 2. "Q3)" किंवा "a) " असे सगळे ठिकाणं शोधा
+    
     pattern = re.compile(r"Q(\d+)\)|\b([a-c])\)\s")
     matches = list(pattern.finditer(text))
 
@@ -18,17 +18,17 @@ def split_questions(text):
     current_q = None
 
     for i, m in enumerate(matches):
-        # या खुणेपासून पुढच्या खुणेपर्यंतचा भाग
+    
         if i + 1 < len(matches):
             end = matches[i + 1].start()
         else:
             end = len(text)
 
         if m.group(1):
-            # हे "Q3)" सारखं आहे, म्हणून मोठा प्रश्न क्रमांक लक्षात ठेवा
+        
             current_q = m.group(1)
         else:
-            # हे "a)" सारखं आहे, म्हणून हा एक छोटा प्रश्न आहे
+            
             body = text[m.end():end].strip()
             questions.append(
                 {
