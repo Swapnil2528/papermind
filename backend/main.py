@@ -10,7 +10,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-SIMILARITY_LIMIT = 85
+SIMILARITY_LIMIT = 92
 
 
 def normalize(text):
@@ -66,6 +66,13 @@ async def upload_paper(file: UploadFile = File(...)):
 
     db = SessionLocal()
     try:
+        existing = db.query(Paper).filter(Paper.filename == file.filename).first()
+        if existing:
+            return {
+                "message": "This paper is already uploaded",
+                "paper_id": existing.id,
+            }
+
         paper = Paper(filename=file.filename)
         db.add(paper)
         db.commit()
