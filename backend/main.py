@@ -2,6 +2,7 @@ import re
 
 import fitz  # PyMuPDF
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from rapidfuzz import fuzz
 
 from database import Base, Paper, Question, SessionLocal, engine
@@ -9,6 +10,13 @@ from database import Base, Paper, Question, SessionLocal, engine
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 SIMILARITY_LIMIT = 92
 
