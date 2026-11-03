@@ -6,19 +6,22 @@ function App() {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
   const [repeated, setRepeated] = useState([]);
+  const [questions, setQuestions] = useState([]);
 
-  async function loadRepeated() {
+  async function loadData() {
     try {
-      const res = await fetch(`${API}/repeated`);
-      const data = await res.json();
-      setRepeated(data);
+      const repRes = await fetch(`${API}/repeated`);
+      setRepeated(await repRes.json());
+
+      const qRes = await fetch(`${API}/questions`);
+      setQuestions(await qRes.json());
     } catch (err) {
       setMessage("Could not reach the backend. Is it running?");
     }
   }
 
   useEffect(() => {
-    loadRepeated();
+    loadData();
   }, []);
 
   async function handleUpload() {
@@ -45,11 +48,38 @@ function App() {
           `Saved ${data.total_questions} questions. Repeated from earlier papers: ${data.repeated_from_earlier_papers}`
         );
       }
-      await loadRepeated();
+      await loadData();
     } catch (err) {
       setMessage("Could not reach the backend. Is it running?");
     }
   }
+
+  // group_id -> किती वेगवेगळ्या पेपरमध्ये आला
+  const papersPerGroup = {};
+  questions.forEach((q) => {
+    if (!papersPerGroup[q.group_id]) {
+      papersPerGroup[q.group_id] = new Set();
+    }
+    papersPerGroup[q.group_id].add(q.paper_id);
+  });
+
+  // paper_id -> त्या पेपरचे प्रश्न
+  const byPaper = {};
+  questions.forEach((q) => {
+    if (!byPaper[q.paper_id]) {
+      byPaper[q.paper_id] = [];
+    }
+    byPaper[q.paper_id].push(q);
+  });
+
+  const badgeStyle = {
+    background: "#fde68a",
+    color: "#7c2d12",
+    borderRadius: 12,
+    padding: "2px 10px",
+    fontSize: 13,
+    marginLeft: 8,
+  };
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: 24, textAlign: "left" }}>
@@ -78,6 +108,31 @@ function App() {
           </li>
         ))}
       </ul>
+
+      <h2>All papers</h2>
+      {questions.length === 0 && <p>No papers uploaded yet.</p>}
+      {Object.keys(byPaper).map((paperId) => (
+        <div key={paperId} style={{ marginBottom: 24 }}>
+          <h3>Paper {paperId}</h3>
+          <ul>
+            {byPaper[paperId].map((q) => {
+              const count = papersPerGroup[q.group_id].size;
+              return (
+                <li key={q.id} style={{ marginBottom: 8 }}>
+                  <strong>
+                    {q.question_no}
+                    {q.part})
+                  </strong>{" "}
+                  {q.text}
+                  {count > 1 && (
+                    <span style={badgeStyle}>Seen in {count} papers</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }
