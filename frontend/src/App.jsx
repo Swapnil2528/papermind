@@ -1,122 +1,85 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+
+const API = "http://127.0.0.1:8000";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState("");
+  const [repeated, setRepeated] = useState([]);
+
+  async function loadRepeated() {
+    try {
+      const res = await fetch(`${API}/repeated`);
+      const data = await res.json();
+      setRepeated(data);
+    } catch (err) {
+      setMessage("Could not reach the backend. Is it running?");
+    }
+  }
+
+  useEffect(() => {
+    loadRepeated();
+  }, []);
+
+  async function handleUpload() {
+    if (!file) {
+      setMessage("Please choose a PDF first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    setMessage("Uploading...");
+
+    try {
+      const res = await fetch(`${API}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+
+      if (data.total_questions === undefined) {
+        setMessage(data.message || "Something went wrong.");
+      } else {
+        setMessage(
+          `Saved ${data.total_questions} questions. Repeated from earlier papers: ${data.repeated_from_earlier_papers}`
+        );
+      }
+      await loadRepeated();
+    } catch (err) {
+      setMessage("Could not reach the backend. Is it running?");
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: 24, textAlign: "left" }}>
+      <h1>PaperMind</h1>
+      <p>Upload an SPPU question paper (PDF with typed text).</p>
 
-      <div className="ticks"></div>
+      <input
+        type="file"
+        accept="application/pdf"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
+      <button onClick={handleUpload} style={{ marginLeft: 12 }}>
+        Upload
+      </button>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <p>{message}</p>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <h2>Repeated questions</h2>
+      {repeated.length === 0 && <p>No repeated questions yet.</p>}
+      <ul>
+        {repeated.map((item) => (
+          <li key={item.group_id} style={{ marginBottom: 12 }}>
+            <strong>Repeated {item.times_repeated} times</strong>
+            <br />
+            {item.question}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
