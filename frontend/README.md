@@ -1,16 +1,43 @@
-# React + Vite
+# PaperMind
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AI-assisted analyzer for SPPU question papers. It finds which questions repeat across years so students can study smarter.
 
-Currently, two official plugins are available:
+## Features
+- Upload a question paper (PDF) and extract every question automatically
+- Detect repeated questions across papers using fuzzy matching
+- See all papers and which questions appear in more than one paper
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Screenshots
+![Home](docs/screenshot1.png)
+![All papers](docs/screenshot2.png)
 
-## React Compiler
+## Tech Stack
+- Frontend: React + Vite
+- Backend: Python, FastAPI
+- PDF parsing: PyMuPDF
+- Matching: RapidFuzz
+- Database: SQLite with SQLAlchemy
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## How to run
+Backend:
+```
+cd backend
+python -m venv venv
+venv\Scripts\Activate.ps1
+pip install fastapi uvicorn pymupdf python-multipart sqlalchemy rapidfuzz
+uvicorn main:app --reload
+```
 
-## Expanding the ESLint configuration
+Frontend:
+```
+cd frontend
+npm install
+npm run dev
+```
+Open http://localhost:5173
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Roadmap
+- [ ] Read scanned papers and photos
+- [ ] AI-generated model answers
+- [ ] Chapter-wise weightage charts
+- [ ] Live deployment
