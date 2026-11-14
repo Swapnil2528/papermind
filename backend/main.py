@@ -1,3 +1,4 @@
+import os
 import re
 
 import fitz  # PyMuPDF
@@ -11,15 +12,19 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+allowed_origins = ["http://localhost:5173"]
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 SIMILARITY_LIMIT = 92
-
 
 def normalize(text):
     text = text.lower()
