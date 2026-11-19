@@ -1,4 +1,7 @@
 # PaperMind
+**Live demo:** https://papermind-gamma.vercel.app
+
+(The backend runs on a free Render instance, so the first request after a period of inactivity can take about a minute.)
 
 AI-assisted analyzer for SPPU question papers. It finds which questions repeat across years so students can study smarter.
 
